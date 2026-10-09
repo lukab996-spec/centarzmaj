@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Instrument Sans',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;background:#f4ece0}
+  a{color:inherit;text-decoration:none}
+  a:hover{opacity:.9}
+  img{display:block}
+  ::selection{background:#d9a441;color:#111}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#f4ece0;color:#2a2620;overflow-x:hidden">
+
+  <!-- ===== NAVBAR ===== -->
+  <header style="position:fixed;top:0;left:0;right:0;z-index:100;height:72px;background:rgba(13,13,15,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.08)">
+    <div style="max-width:1280px;margin:0 auto;height:100%;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:20px">
+
+      <button onClick="{{ homeGo }}" style="display:flex;align-items:center;gap:12px;background:none;border:none;cursor:pointer;padding:0">
+        <img src="uploads/zmaj-mark-gold.png" alt="Zmaj logo" style="width:46px;height:46px;object-fit:contain;display:block">
+        <span style="text-align:left;line-height:1">
+          <span style="display:block;font-family:'Oswald';font-weight:600;font-size:20px;letter-spacing:.14em;color:#f4f1ea">ZMAJ</span>
+          <span style="display:block;font-size:10px;letter-spacing:.24em;color:#9a948a;text-transform:uppercase;margin-top:2px">Centar · Studio</span>
+        </span>
+      </button>
+
+      <!-- Desktop nav -->
+      <sc-if value="{{ showDesktop }}" hint-placeholder-val="{{ true }}">
+        <nav style="display:flex;align-items:center;gap:4px">
+          <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="4">
+            <sc-if value="{{ item.isGroup }}">
+              <div onMouseEnter="{{ item.open }}" onMouseLeave="{{ item.close }}" style="position:relative">
+                <button style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:#e7e3da;font-family:'Instrument Sans';font-size:14.5px;font-weight:500;padding:10px 14px;border-radius:8px" style-hover="background:rgba(255,255,255,.07)">
+                  {{ item.label }}
+                  <span style="font-size:9px;opacity:.6">▼</span>
+                </button>
+                <sc-if value="{{ item.isOpen }}">
+                  <div style="position:absolute;top:100%;left:0;min-width:260px;background:#17171a;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:8px;box-shadow:0 24px 60px rgba(0,0,0,.45);animation:fadeIn .16s ease">
+                    <sc-for list="{{ item.items }}" as="sub" hint-placeholder-count="3">
+                      <button onClick="{{ sub.go }}" style="display:block;width:100%;text-align:left;background:none;border:none;cursor:pointer;color:#cfc9bf;font-family:'Instrument Sans';font-size:14px;padding:11px 14px;border-radius:9px" style-hover="background:rgba(217,164,65,.14);color:#f4f1ea">{{ sub.label }}</button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+            <sc-if value="{{ item.isLink }}">
+              <button onClick="{{ item.go }}" style="background:none;border:none;cursor:pointer;color:#e7e3da;font-family:'Instrument Sans';font-size:14.5px;font-weight:500;padding:10px 14px;border-radius:8px" style-hover="background:rgba(255,255,255,.07)">{{ item.label }}</button>
+            </sc-if>
+          </sc-for>
+        </nav>
+
+        <div style="display:flex;align-items:center;gap:10px">
+          <a href="tel:+38163350426" style="display:flex;align-items:center;gap:7px;color:#e7e3da;font-size:13.5px;font-weight:500;padding:9px 13px;border:1px solid rgba(255,255,255,.18);border-radius:10px;white-space:nowrap" style-hover="border-color:#d9a441;color:#d9a441">Pozovite nas</a>
+          <a href="viber://chat?number=%2B38163350426" style="display:flex;align-items:center;gap:7px;background:#d9a441;color:#141414;font-size:13.5px;font-weight:600;padding:10px 15px;border-radius:10px;white-space:nowrap" style-hover="background:#e6b457">Viber</a>
+        </div>
+      </sc-if>
+
+      <!-- Mobile hamburger -->
+      <sc-if value="{{ showMobile }}">
+        <button onClick="{{ toggleMobile }}" aria-label="Meni" style="display:flex;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:10px">
+          <span style="width:26px;height:2px;background:#f4f1ea;border-radius:2px"></span>
+          <span style="width:26px;height:2px;background:#f4f1ea;border-radius:2px"></span>
+          <span style="width:26px;height:2px;background:#f4f1ea;border-radius:2px"></span>
+        </button>
+      </sc-if>
+    </div>
+  </header>
+
+  <!-- ===== MOBILE MENU OVERLAY ===== -->
+  <sc-if value="{{ mobileOpen }}">
+    <div style="position:fixed;inset:0;z-index:99;background:#0d0d0f;padding:88px 22px 40px;overflow-y:auto;animation:fadeIn .2s ease">
+      <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="4">
+        <sc-if value="{{ item.isGroup }}">
+          <div style="border-bottom:1px solid rgba(255,255,255,.08)">
+            <button onClick="{{ item.toggle }}" style="display:flex;width:100%;align-items:center;justify-content:space-between;background:none;border:none;cursor:pointer;color:#f4f1ea;font-family:'Oswald';font-size:20px;font-weight:500;letter-spacing:.03em;padding:18px 4px">
+              {{ item.label }}
+              <span style="font-size:12px;color:#d9a441">{{ item.caret }}</span>
+            </button>
+            <sc-if value="{{ item.isOpen }}">
+              <div style="padding:0 4px 14px">
+                <sc-for list="{{ item.items }}" as="sub" hint-placeholder-count="3">
+                  <button onClick="{{ sub.go }}" style="display:block;width:100%;text-align:left;background:none;border:none;cursor:pointer;color:#bdb7ad;font-size:16px;padding:11px 10px;border-left:2px solid rgba(217,164,65,.4);margin:4px 0">{{ sub.label }}</button>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+        <sc-if value="{{ item.isLink }}">
+          <button onClick="{{ item.go }}" style="display:block;width:100%;text-align:left;background:none;border:none;cursor:pointer;color:#f4f1ea;font-family:'Oswald';font-size:20px;font-weight:500;letter-spacing:.03em;padding:18px 4px;border-bottom:1px solid rgba(255,255,255,.08)">{{ item.label }}</button>
+        </sc-if>
+      </sc-for>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:28px">
+        <a href="tel:+38163350426" style="text-align:center;background:#d9a441;color:#141414;font-weight:600;padding:16px;border-radius:12px;font-size:16px">Pozovite nas</a>
+        <a href="viber://chat?number=%2B38163350426" style="text-align:center;border:1px solid rgba(255,255,255,.2);color:#f4f1ea;font-weight:500;padding:16px;border-radius:12px;font-size:16px">Zakaži putem Vibera</a>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===== HOME ===== -->
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+  <main style="padding-top:72px">
+
+    <!-- Split hero -->
+    <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr))">
+      <!-- SPORT -->
+      <div style="position:relative;min-height:clamp(440px,74vh,780px);display:flex;align-items:flex-end;overflow:hidden;background:#0d0d0f">
+        <img src="uploads/dnevni trening.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.46">
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,13,15,.55) 0%,rgba(13,13,15,.2) 40%,rgba(13,13,15,.92) 100%)"></div>
+        <div style="position:relative;padding:48px clamp(28px,5vw,72px);max-width:620px;animation:fadeUp .7s ease both">
+          <span style="display:inline-block;font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:#d9a441;font-weight:600;margin-bottom:18px">Sportski centar</span>
+          <h1 style="font-family:'Oswald';font-weight:700;font-size:clamp(40px,6vw,68px);line-height:.98;color:#f4f1ea;letter-spacing:.01em;text-transform:uppercase">Snaga.<br>Disciplina.<br>Energija.</h1>
+          <p style="color:#cbc5bb;font-size:17px;line-height:1.6;margin:22px 0 28px;max-width:430px">Fitness i borilačke veštine pod vođstvom iskusnih trenera. Pomeri svoje granice u Centru Zmaj.</p>
+          <button onClick="{{ heroSportGo }}" style="display:inline-flex;align-items:center;gap:10px;background:#d9a441;color:#141414;font-weight:600;font-size:16px;padding:15px 28px;border:none;border-radius:11px;cursor:pointer" style-hover="background:#e6b457;transform:translateX(3px)">Istraži treninge →</button>
+        </div>
+      </div>
+      <!-- STUDIO -->
+      <div style="position:relative;min-height:clamp(440px,74vh,780px);display:flex;align-items:flex-end;overflow:hidden;background:#efe6d8">
+        <img src="uploads/masaza-kristali.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55">
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(244,236,224,.45) 0%,rgba(244,236,224,.15) 38%,rgba(244,236,224,.95) 100%)"></div>
+        <div style="position:relative;padding:48px clamp(28px,5vw,72px);max-width:620px;animation:fadeUp .7s ease .1s both">
+          <span style="display:inline-block;font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:#9a7fb0;font-weight:600;margin-bottom:18px">Wellness studio</span>
+          <h1 style="font-family:'Cormorant Garamond';font-weight:600;font-size:clamp(44px,6.6vw,76px);line-height:1;color:#2a2620">Mir.<br><em style="color:#9a7fb0">Nega.</em><br>Ravnoteža.</h1>
+          <p style="color:#5f564b;font-size:17px;line-height:1.6;margin:20px 0 28px;max-width:430px">Masaže, holistički tretmani i prirodni proizvodi za telo i duh. Uspori i vrati se sebi u Studiju Zmaj.</p>
+          <button onClick="{{ heroStudioGo }}" style="display:inline-flex;align-items:center;gap:10px;background:#2a2620;color:#f4ece0;font-weight:600;font-size:16px;padding:15px 28px;border:none;border-radius:11px;cursor:pointer" style-hover="background:#9a7fb0;transform:translateX(3px)">Otkrij wellness →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- O nama -->
+    <section style="max-width:1080px;margin:0 auto;padding:clamp(72px,10vw,120px) 24px;text-align:center">
+      <span style="font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:#9a7fb0;font-weight:600">O nama</span>
+      <h2 style="font-family:'Cormorant Garamond';font-weight:600;font-size:clamp(32px,5vw,52px);line-height:1.08;margin:18px auto 24px;max-width:780px;color:#2a2620;text-wrap:balance">Jedan brend, dve snage — telo i duh u savršenoj ravnoteži.</h2>
+      <p style="font-size:18px;line-height:1.7;color:#5f564b;max-width:680px;margin:0 auto;text-wrap:pretty">Zmaj spaja dinamičnu energiju sportskog centra i smirujuću negu wellness studija. Treniraj snagu i izdržljivost, a zatim obnovi telo kroz masaže, prirodne tretmane i proizvode napravljene s pažnjom. Verujemo da pravi balans dolazi kada se telo izazove i potom nahrani.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:20px;max-width:760px;margin:52px auto 0">
+        <div><div style="font-family:'Oswald';font-size:44px;font-weight:700;color:#d9a441">12+</div><div style="color:#7c7266;font-size:14px;margin-top:4px">vrsta treninga</div></div>
+        <div><div style="font-family:'Oswald';font-size:44px;font-weight:700;color:#9a7fb0">20+</div><div style="color:#7c7266;font-size:14px;margin-top:4px">wellness tretmana</div></div>
+        <div><div style="font-family:'Oswald';font-size:44px;font-weight:700;color:#8aa08a">100%</div><div style="color:#7c7266;font-size:14px;margin-top:4px">prirodni proizvodi</div></div>
+        <div><div style="font-family:'Oswald';font-size:44px;font-weight:700;color:#e3762f">25+</div><div style="color:#7c7266;font-size:14px;margin-top:4px">godina rada</div></div>
+      </div>
+    </section>
+
+    <!-- Istaknute usluge i proizvodi -->
+    <section style="background:#ece2d2;padding:clamp(72px,9vw,110px) 24px">
+      <div style="max-width:1200px;margin:0 auto">
+        <div style="text-align:center;max-width:620px;margin:0 auto 52px">
+          <span style="font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:#9a7fb0;font-weight:600">Naše usluge</span>
+          <h2 style="font-family:'Oswald';font-weight:600;font-size:clamp(30px,4.5vw,46px);color:#2a2620;margin-top:12px;text-transform:uppercase;letter-spacing:.01em">Telo i duh na jednom mestu</h2>
+          <p style="color:#6b6256;font-size:15.5px;line-height:1.6;margin-top:14px">Izaberi ponudu i otvori detalje — opis, beneficije, trajanje i cenu, uz brzo zakazivanje.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:20px">
+          <sc-for list="{{ featured }}" as="c" hint-placeholder-count="6">
+            <button onClick="{{ c.go }}" style="display:block;text-align:left;background:#fbf6ee;border:1px solid rgba(42,38,32,.1);border-radius:18px;cursor:pointer;padding:30px 26px 26px;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease" style-hover="transform:translateY(-8px);box-shadow:0 20px 40px rgba(42,38,32,.12);border-color:{{ c.accent }}">
+              <span style="display:flex;width:52px;height:52px;align-items:center;justify-content:center;border-radius:14px;background:{{ c.accentSoft }};color:{{ c.accent }};margin-bottom:22px">{{ c.icon }}</span>
+              <h3 style="font-family:'Oswald';font-size:21px;font-weight:600;color:#2a2620;letter-spacing:.01em;margin-bottom:10px">{{ c.title }}</h3>
+              <p style="color:#6e6557;font-size:14.5px;line-height:1.6;margin-bottom:20px">{{ c.short }}</p>
+              <span style="display:inline-flex;align-items:center;color:{{ c.accent }};font-weight:600;font-size:13px;letter-spacing:.14em;text-transform:uppercase;padding-bottom:3px;border-bottom:2px solid {{ c.accentSoft }}">Detaljnije</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <!-- Galerija -->
+    <section style="background:#f4ece0;padding:clamp(72px,9vw,110px) 24px">
+      <div style="max-width:1200px;margin:0 auto">
+        <div style="text-align:center;max-width:620px;margin:0 auto 46px">
+          <span style="font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:#9a7fb0;font-weight:600">Galerija</span>
+          <h2 style="font-family:'Oswald';font-weight:600;font-size:clamp(30px,4.5vw,46px);color:#2a2620;margin-top:12px;text-transform:uppercase;letter-spacing:.01em">Trenuci iz Zmaja</h2>
+          <p style="color:#6b6256;font-size:15.5px;line-height:1.6;margin-top:14px">Atmosfera sa treninga, tretmana i iz našeg studija.</p>
+        </div>
+        <div style="columns:3 260px;column-gap:16px">
+          <sc-for list="{{ gallery }}" as="g" hint-placeholder-count="8">
+            <div style="break-inside:avoid;margin-bottom:16px;position:relative;overflow:hidden;border-radius:16px;cursor:pointer" style-hover="box-shadow:0 20px 40px rgba(42,38,32,.2)">
+              <img src="{{ g.img }}" alt="" loading="lazy" style="width:100%;display:block;transition:transform .5s ease" style-hover="transform:scale(1.06)">
+              <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(13,13,15,.72));opacity:0;transition:opacity .35s ease;display:flex;align-items:flex-end;padding:18px" style-hover="opacity:1">
+                <span style="color:#f4f1ea;font-family:'Oswald';font-size:17px;font-weight:500;letter-spacing:.02em">{{ g.label }}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <!-- Kontakt & CTA -->
+    <section style="position:relative;background:#0d0d0f;color:#f4f1ea;padding:clamp(72px,10vw,120px) 24px;overflow:hidden">
+      <div style="position:absolute;top:-80px;right:-60px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(217,164,65,.18),transparent 70%)"></div>
+      <div style="position:relative;max-width:820px;margin:0 auto;text-align:center">
+        <span style="font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:#d9a441;font-weight:600">Spremni?</span>
+        <h2 style="font-family:'Oswald';font-weight:700;font-size:clamp(32px,5.5vw,58px);margin:18px 0 20px;text-transform:uppercase;line-height:1.02">Zakaži svoj termin danas</h2>
+        <p style="color:#bdb7ad;font-size:18px;line-height:1.6;max-width:540px;margin:0 auto 36px">Jedan poziv ili poruka je dovoljan. Javi nam se putem Vibera ili telefona i rezervišemo tvoje mesto.</p>
+        <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+          <a href="tel:+38163350426" style="background:#d9a441;color:#141414;font-weight:600;font-size:16px;padding:16px 30px;border-radius:12px" style-hover="background:#e6b457">Pozovite nas</a>
+          <a href="viber://chat?number=%2B38163350426" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#f4f1ea;font-weight:600;font-size:16px;padding:16px 30px;border-radius:12px" style-hover="border-color:#d9a441;color:#d9a441">Viber poruka</a>
+        </div>
+        <button onClick="{{ contactGo }}" style="margin-top:28px;background:none;border:none;color:#9a948a;font-size:14px;cursor:pointer;text-decoration:underline">Pogledaj lokaciju i radno vreme →</button>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <!-- ===== DETAIL VIEW ===== -->
+  <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+  <main style="padding-top:72px;background:{{ d.bg }};color:{{ d.text }};min-height:100vh">
+    <section style="max-width:1200px;margin:0 auto;padding:clamp(36px,5vw,64px) 24px clamp(60px,8vw,96px)">
+      <button onClick="{{ homeGo }}" style="background:none;border:none;cursor:pointer;color:{{ d.muted }};font-size:14px;margin-bottom:28px" style-hover="color:{{ d.accent }}">← Nazad na početnu</button>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:clamp(28px,4vw,56px);align-items:center">
+        <div style="position:relative;border-radius:20px;overflow:hidden;aspect-ratio:4/3;background:{{ d.panel }}">
+          <sc-if value="{{ d.img }}" hint-placeholder-val="{{ false }}"><img src="{{ d.img }}" alt="" style="width:100%;height:100%;object-fit:cover"></sc-if>
+        </div>
+        <div style="animation:fadeUp .5s ease both">
+          <span style="display:inline-block;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:{{ d.accent }};font-weight:600;margin-bottom:16px">{{ d.cat }}</span>
+          <h1 style="font-family:{{ d.font }};font-weight:{{ d.weight }};font-size:clamp(34px,5.5vw,56px);line-height:1.02;color:{{ d.text }};margin-bottom:20px">{{ d.title }}</h1>
+          <p style="font-size:17.5px;line-height:1.7;color:{{ d.muted }};margin-bottom:28px;max-width:520px;text-wrap:pretty">{{ d.desc }}</p>
+          <div style="display:flex;gap:28px;flex-wrap:wrap;padding:20px 0;border-top:1px solid {{ d.line }};border-bottom:1px solid {{ d.line }};margin-bottom:28px">
+            <div><div style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:{{ d.muted }};margin-bottom:5px">{{ d.infoLabel }}</div><div style="font-family:'Oswald';font-size:22px;font-weight:500;color:{{ d.text }}">{{ d.infoVal }}</div></div>
+            <div><div style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:{{ d.muted }};margin-bottom:5px">Cena</div><div style="font-family:'Oswald';font-size:22px;font-weight:500;color:{{ d.accent }}">{{ d.price }}</div></div>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <a href="tel:+38163350426" style="background:{{ d.accent }};color:{{ d.onAccent }};font-weight:600;font-size:15.5px;padding:15px 26px;border-radius:11px" style-hover="opacity:.9">Pozovite nas</a>
+            <a href="viber://chat?number=%2B38163350426" style="border:1px solid {{ d.line2 }};color:{{ d.text }};font-weight:600;font-size:15.5px;padding:15px 26px;border-radius:11px" style-hover="border-color:{{ d.accent }};color:{{ d.accent }}">{{ d.cta }} · Viber</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cenovnik -->
+      <sc-if value="{{ d.hasPrices }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-top:clamp(48px,6vw,80px)">
+        <h2 style="font-family:'Oswald';font-weight:600;font-size:clamp(24px,3.4vw,34px);color:{{ d.text }};text-transform:uppercase;letter-spacing:.01em;margin-bottom:26px">Cenovnik</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:20px">
+          <sc-for list="{{ d.priceTable }}" as="g" hint-placeholder-count="2">
+            <div style="background:{{ d.panel }};border:1px solid {{ d.line }};border-radius:16px;padding:24px 26px">
+              <h3 style="font-family:'Oswald';font-size:19px;font-weight:600;color:{{ d.accent }};text-transform:uppercase;letter-spacing:.03em;margin-bottom:14px">{{ g.name }}</h3>
+              <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="4">
+                <div style="display:flex;align-items:baseline;gap:12px;padding:9px 0;border-bottom:1px solid {{ d.line }}">
+                  <span style="flex:1 1 auto;font-size:14.5px;color:{{ d.text }};line-height:1.4">{{ r.t }}</span>
+                  <span style="flex:0 0 auto;font-size:13px;color:{{ d.muted }};min-width:42px;text-align:right">{{ r.min }}</span>
+                  <span style="flex:0 0 auto;font-family:'Oswald';font-size:16px;font-weight:600;color:{{ d.text }};min-width:66px;text-align:right">{{ r.rsd }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+        <p style="color:{{ d.muted }};font-size:13px;margin-top:14px">Trajanje u minutima · cene u RSD. Za pakete i dogovor termina javi se putem Vibera.</p>
+      </div>
+      </sc-if>
+      <!-- /Cenovnik -->
+
+      <!-- Beneficije -->
+      <div style="margin-top:clamp(48px,6vw,80px)">
+        <h2 style="font-family:'Oswald';font-weight:600;font-size:clamp(24px,3.4vw,34px);color:{{ d.text }};text-transform:uppercase;letter-spacing:.01em;margin-bottom:26px">Beneficije</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px">
+          <sc-for list="{{ d.benefits }}" as="b" hint-placeholder-count="4">
+            <div style="display:flex;gap:14px;align-items:flex-start;background:{{ d.panel }};border:1px solid {{ d.line }};border-radius:14px;padding:20px 22px">
+              <span style="flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:{{ d.accentSoft }};color:{{ d.accent }};display:flex;align-items:center;justify-content:center;font-family:'Oswald';font-weight:600;font-size:14px">{{ b.n }}</span>
+              <span style="font-size:15.5px;line-height:1.55;color:{{ d.text }}">{{ b.t }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- Ostala ponuda -->
+      <div style="margin-top:clamp(48px,6vw,80px);padding-top:36px;border-top:1px solid {{ d.line }}">
+        <div style="font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:{{ d.muted }};margin-bottom:18px">Ostala ponuda</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <sc-for list="{{ related }}" as="r" hint-placeholder-count="4">
+            <button onClick="{{ r.go }}" style="background:{{ d.panel }};border:1px solid {{ d.line2 }};color:{{ d.text }};font-size:14px;font-weight:500;padding:11px 18px;border-radius:999px;cursor:pointer" style-hover="border-color:{{ d.accent }};color:{{ d.accent }}">{{ r.title }}</button>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <!-- ===== CONTACT VIEW ===== -->
+  <sc-if value="{{ isContact }}" hint-placeholder-val="{{ false }}">
+  <main style="padding-top:72px;background:#f4ece0;min-height:100vh">
+    <section style="max-width:1200px;margin:0 auto;padding:clamp(48px,6vw,88px) 24px">
+      <span style="font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:#9a7fb0;font-weight:600">Kontakt</span>
+      <h1 style="font-family:'Oswald';font-weight:700;font-size:clamp(36px,6vw,62px);text-transform:uppercase;color:#2a2620;margin:14px 0 36px;line-height:1">Javi nam se</h1>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:28px;align-items:start">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <sc-for list="{{ contactCards }}" as="k" hint-placeholder-count="4">
+            <div style="background:#fbf6ee;border:1px solid rgba(0,0,0,.08);border-radius:16px;padding:24px">
+              <div style="font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#9a7fb0;font-weight:600;margin-bottom:8px">{{ k.label }}</div>
+              <div style="font-size:19px;font-weight:600;color:#2a2620;line-height:1.4">{{ k.value }}</div>
+              <div style="color:#7c7266;font-size:14.5px;margin-top:4px">{{ k.sub }}</div>
+            </div>
+          </sc-for>
+          <div style="display:flex;flex-direction:column;gap:12px;margin-top:6px">
+            <a href="tel:+38163350426" style="text-align:center;background:#7b519c;color:#fff;font-weight:600;padding:16px;border-radius:12px;font-size:16px" style-hover="opacity:.92">Pozovite nas</a>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <a href="viber://chat?number=%2B38163350426" style="text-align:center;background:#2a2620;color:#f4ece0;font-weight:600;padding:16px;border-radius:12px;font-size:15px" style-hover="background:#8aa08a">Viber</a>
+              <a href="https://wa.me/38163350426" style="text-align:center;border:1px solid rgba(0,0,0,.18);color:#2a2620;font-weight:600;padding:16px;border-radius:12px;font-size:15px" style-hover="border-color:#9a7fb0;color:#9a7fb0">WhatsApp</a>
+            </div>
+          </div>
+        </div>
+        <div style="border-radius:18px;overflow:hidden;border:1px solid rgba(0,0,0,.08);min-height:380px">
+          <iframe src="https://maps.google.com/maps?q=44.0773277,22.1002178&z=17&output=embed" title="Lokacija — Studio Zmaj, Bor" style="width:100%;height:100%;min-height:380px;border:0;display:block" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen=""></iframe>
+        </div>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <!-- ===== FOOTER ===== -->
+  <footer style="background:#0d0d0f;color:#bdb7ad;padding:clamp(48px,6vw,72px) 24px 36px">
+    <div style="max-width:1280px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:36px">
+      <div style="max-width:300px">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+          <img src="uploads/zmaj-mark-gold.png" alt="Zmaj logo" style="width:44px;height:44px;object-fit:contain;display:block">
+          <span style="font-family:'Oswald';font-weight:600;font-size:20px;letter-spacing:.14em;color:#f4f1ea">ZMAJ</span>
+        </div>
+        <p style="font-size:14.5px;line-height:1.6;color:#8f8a80">Sportski centar i wellness studio na jednom mestu. Snaga tela, mir duha.</p>
+        <div style="display:flex;gap:12px;margin-top:18px">
+          <a href="https://www.instagram.com/centarzmaj/" target="_blank" rel="noopener" aria-label="Instagram @centarzmaj" style="display:flex;width:42px;height:42px;align-items:center;justify-content:center;border-radius:12px;border:1px solid rgba(255,255,255,.16);color:#f4f1ea" style-hover="border-color:#d9a441;color:#d9a441;transform:translateY(-2px)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+          </a>
+          <a href="https://www.facebook.com/centarsportazasvezmaj/" target="_blank" rel="noopener" aria-label="Facebook Centar Zmaj" style="display:flex;width:42px;height:42px;align-items:center;justify-content:center;border-radius:12px;border:1px solid rgba(255,255,255,.16);color:#f4f1ea" style-hover="border-color:#d9a441;color:#d9a441;transform:translateY(-2px)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M14 9h3V5.5h-3c-2.2 0-4 1.8-4 4V12H7v3.5h3V22h3.5v-6.5H17l.5-3.5H13.5V9.7c0-.4.3-.7.7-.7z"/></svg>
+          </a>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#6b665e;margin-bottom:14px">Centar Zmaj</div>
+        <sc-for list="{{ footTreninzi }}" as="f" hint-placeholder-count="4">
+          <button onClick="{{ f.go }}" style="display:block;background:none;border:none;cursor:pointer;color:#bdb7ad;font-size:14.5px;padding:6px 0;text-align:left" style-hover="color:#d9a441">{{ f.label }}</button>
+        </sc-for>
+      </div>
+      <div>
+        <div style="font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#6b665e;margin-bottom:14px">Studio Zmaj</div>
+        <sc-for list="{{ footStudio }}" as="f" hint-placeholder-count="5">
+          <button onClick="{{ f.go }}" style="display:block;background:none;border:none;cursor:pointer;color:#bdb7ad;font-size:14.5px;padding:6px 0;text-align:left" style-hover="color:#9a7fb0">{{ f.label }}</button>
+        </sc-for>
+      </div>
+      <div>
+        <div style="font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#6b665e;margin-bottom:14px">Kontakt</div>
+        <a href="tel:+38163350426" style="display:block;color:#f4f1ea;font-size:16px;font-weight:600;padding:4px 0">+381 63 350 426</a>
+        <div style="color:#8f8a80;font-size:14px;margin:6px 0 16px">Dobrivoja Radosavljevića Bobija 5, Bor 19210<br>Pon–Pet 15h–21h</div>
+        <div style="display:flex;gap:10px">
+          <a href="viber://chat?number=%2B38163350426" style="background:#d9a441;color:#141414;font-weight:600;font-size:13.5px;padding:10px 16px;border-radius:9px">Viber</a>
+          <a href="https://wa.me/38163350426" style="border:1px solid rgba(255,255,255,.2);color:#f4f1ea;font-weight:600;font-size:13.5px;padding:10px 16px;border-radius:9px">WhatsApp</a>
+        </div>
+      </div>
+    </div>
+    <div style="max-width:1280px;margin:40px auto 0;padding-top:24px;border-top:1px solid rgba(255,255,255,.08);font-size:13px;color:#6b665e">© 2026 Brend Zmaj. Sva prava zadržana.</div>
+  </footer>
+
+  <!-- Floating actions -->
+  <div style="position:fixed;right:20px;bottom:20px;z-index:90;display:flex;flex-direction:column;gap:12px">
+    <a href="viber://chat?number=%2B38163350426" aria-label="Viber chat" style="display:flex;width:54px;height:54px;align-items:center;justify-content:center;border-radius:50%;background:#7b519c;color:#fff;box-shadow:0 10px 26px rgba(123,81,156,.45)" style-hover="background:#8a63ab;transform:translateY(-3px)">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3h2a1 1 0 0 1 1 .76l1 3.9a1 1 0 0 1-.29 1L7.8 10.2a12 12 0 0 0 6 6l1.54-1.42a1 1 0 0 1 1-.26l3.9 1a1 1 0 0 1 .76 1v2A2.5 2.5 0 0 1 18.5 21 15.5 15.5 0 0 1 3 5.5z"/></svg>
+    </a>
+    <button onClick="{{ scrollTop }}" aria-label="Nazad na vrh" style="display:flex;width:54px;height:54px;align-items:center;justify-content:center;border-radius:50%;background:#d9a441;color:#141414;border:none;cursor:pointer;box-shadow:0 10px 26px rgba(217,164,65,.45)" style-hover="background:#e6b457;transform:translateY(-3px)">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+    </button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { view:'home', key:'home', mobileOpen:false, openDropdown:null, isMobile:false };
+
+  componentDidMount(){
+    this._on = () => this.setState({ isMobile: window.innerWidth < 860 });
+    this._on();
+    window.addEventListener('resize', this._on);
+  }
+  componentWillUnmount(){ window.removeEventListener('resize', this._on); }
+
+  navigate(key){
+    const view = key === 'home' ? 'home' : key === 'contact' ? 'contact' : 'detail';
+    this.setState({ key, view, mobileOpen:false, openDropdown:null });
+    if (typeof window !== 'undefined') window.scrollTo({ top:0, behavior:'auto' });
+  }
+
+  renderVals(){
+    const self = this;
+    const mk = (k) => () => self.navigate(k);
+
+    const sport  = { bg:'#0d0d0f', panel:'#17171a', text:'#f4f1ea', muted:'#a39c90', line:'rgba(255,255,255,.1)', line2:'rgba(255,255,255,.22)', accent:'#d9a441', accentSoft:'rgba(217,164,65,.16)', onAccent:'#141414', font:"'Oswald'", weight:700 };
+    const studio = { bg:'#f4ece0', panel:'#fbf6ee', text:'#2a2620', muted:'#6e6557', line:'rgba(0,0,0,.09)', line2:'rgba(0,0,0,.2)', accent:'#7b519c', accentSoft:'rgba(123,81,156,.14)', onAccent:'#ffffff', font:"'Cormorant Garamond'", weight:600 };
+
+    const DATA = {
+      fitnessmix:{ group:'sport', title:'FitnessMix', cat:'Trening · Centar Zmaj', badge:'Fitness', short:'Grupni funkcionalni trening za snagu i kondiciju.',
+        img:'uploads/fitnesmix.jpg',
+        desc:'Energičan grupni funkcionalni trening koji spaja kardio, snagu i izdržljivost. Pogodan za sve nivoe — od početnika do iskusnih vežbača, uz stalni nadzor trenera.',
+        benefits:['Sagorevanje do 700 kcal po treningu','Jačanje celog tela i korekcija držanja','Rad u malim grupama uz nadzor trenera','Fleksibilni termini — jutro i veče'],
+        infoLabel:'Trajanje', infoVal:'60 min', price:'od 600 RSD', cta:'Zakaži termin' },
+      borilacke:{ group:'sport', title:'Borilačke veštine', cat:'Trening · Centar Zmaj', badge:'Borilačke', short:'Samoodbrana, Tai Či i ninja veštine.',
+        img:'uploads/borilačke veštine 2.jpg',
+        desc:'Samoodbrana, Tai Či i ninja veštine kroz strukturisane treninge. Učiš praktične tehnike odbrane, kontrolu daha i pokreta, koordinaciju i samopouzdanje u bezbednom okruženju.',
+        benefits:['Praktične tehnike samoodbrane za svakodnevne situacije','Tai Či za ravnotežu, disanje i unutrašnji mir','Ninja veštine — agilnost, refleksi i koncentracija','Programi za decu i odrasle, za sve nivoe'],
+        infoLabel:'Trajanje', infoVal:'75 min', price:'od 700 RSD', cta:'Zakaži termin' },
+      joga:{ group:'studio', title:'Joga', cat:'Trening · Centar Zmaj', badge:'Joga', short:'Hatha i vinjasa joga za telo i um.',
+        img:'uploads/joga.jpg',
+        desc:'Hatha i vinjasa joga za telo i um. Kroz dah, pokret i meditaciju gradiš fleksibilnost, snagu i unutrašnji mir.',
+        benefits:['Veća gipkost i pokretljivost zglobova','Smanjenje stresa i bolji san','Jačanje dubokih mišića i ravnoteže','Mirne večernje i dinamične jutarnje sesije'],
+        infoLabel:'Trajanje', infoVal:'60 min', price:'od 800 RSD', cta:'Zakaži termin' },
+      obuke:{ group:'sport', title:'Obuke i individualni treninzi', cat:'Trening · Centar Zmaj', badge:'Personal', short:'Personalni treninzi prema tvom cilju.',
+        img:'uploads/obuke.jpg',
+        desc:'Individualni i personalni treninzi kreirani prema tvom cilju — mršavljenje, mišićna masa, rehabilitacija ili priprema za takmičenje.',
+        benefits:['Program i ishrana prilagođeni tebi','Potpuna posvećenost trenera 1-na-1','Merenje napretka i redovne korekcije','Fleksibilni termini po dogovoru'],
+        infoLabel:'Trajanje', infoVal:'45–60 min', price:'od 1.500 RSD', cta:'Zakaži termin' },
+      relax:{ group:'studio', title:'Relax masaža', cat:'Masaža · Studio Zmaj', badge:'Masaža', short:'Opuštajuća masaža celog tela toplim uljima.',
+        img:'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=900&q=80',
+        desc:'Opuštajuća relaks masaža celog tela toplim prirodnim uljima. Oslobađa napetost, poboljšava cirkulaciju i vraća osećaj lakoće.',
+        benefits:['Oslobađanje mišićne napetosti','Dublje opuštanje i bolji san','Prirodna aromaterapijska ulja','Mirno, toplo ambijentalno okruženje'],
+        infoLabel:'Trajanje', infoVal:'15–40 min', price:'od 800 RSD', cta:'Zakaži termin',
+        priceTable:[
+          { name:'Relax', rows:[
+            {t:'Celo telo',min:'40',rsd:'4000'},{t:'Vrat i rameni deo',min:'15',rsd:'1000'},{t:'Glava sa licem',min:'20',rsd:'1500'},{t:'Leđa (vrat, rameni)',min:'30',rsd:'2000'},{t:'Ruke i šake',min:'30',rsd:'2000'},{t:'Noge i stopala',min:'30',rsd:'2000'},{t:'Stopala',min:'15',rsd:'1000'},{t:'Stomak',min:'15',rsd:'800'} ] },
+          { name:'Ostale masaže', rows:[
+            {t:'Reiki tretman',min:'30',rsd:'1000'},{t:'Antistres masaža',min:'40',rsd:'4000'},{t:'Šiacu masaža',min:'40',rsd:'4000'},{t:'Sportska masaža',min:'40',rsd:'4000'},{t:'Terapeutska masaža',min:'40',rsd:'4000'},{t:'Jumeiho masaža',min:'40',rsd:'4000'},{t:'Kraljevska masaža',min:'40',rsd:'6000'} ] },
+          { name:'Tematski / terapeutski tretmani', rows:[
+            {t:'Detoks tretman / drenaža tela',min:'',rsd:'4000'},{t:'Masaža stopala – refleksne zone',min:'40',rsd:'2500'},{t:'Terapeutska (medicinska) masaža leđa',min:'30',rsd:'2000'},{t:'Terapeutska (medicinska) masaža nogu',min:'30',rsd:'2000'},{t:'Terapeutska (medicinska) masaža ruku',min:'30',rsd:'2000'},{t:'Masaža glave – refleksne zone',min:'20',rsd:'1000'},{t:'Otvaranje sinusa',min:'10',rsd:'800'},{t:'Tretman vrata protiv spondiloze vrata',min:'20',rsd:'1000'},{t:'Sportska masaža nogu',min:'30',rsd:'2000'},{t:'Sportska masaža leđa',min:'30',rsd:'2000'},{t:'Sportska masaža ruku',min:'30',rsd:'2000'},{t:'Nameštanje zgloba sa tretiranjem i savetom',min:'',rsd:'1000'},{t:'Diskushernijski bolovi (lumbago, išijas, lordoza, kifoza)',min:'20',rsd:'1000'} ] },
+          { name:'Korekcija statike', rows:[ {t:'Mesečni plan vežbi',min:'',rsd:'3000'} ] }
+        ] },
+      anticelulit:{ group:'studio', title:'Anticelulit tretmani', cat:'Tretman · Studio Zmaj', badge:'Tretman', short:'Ciljani tretman za zatezanje i tonus kože.',
+        img:'uploads/anticelulit.jpg',
+        desc:'Ciljani anticelulit tretman koji kombinuje manuelne tehnike i aktivna ulja za zatezanje i ujednačavanje kože.',
+        benefits:['Poboljšanje tonusa i elastičnosti kože','Stimulacija limfne drenaže','Vidljivi rezultati uz redovne tretmane','Preporuka u paketima od 10 tretmana'],
+        infoLabel:'Trajanje', infoVal:'20–60 min', price:'od 3.000 RSD', cta:'Zakaži termin',
+        priceTable:[
+          { name:'Anticelulit', rows:[
+            {t:'But i zadnjica',min:'',rsd:'5000'},{t:'Stomak',min:'',rsd:'3000'},{t:'Ruke',min:'',rsd:'3000'},{t:'Cele noge',min:'',rsd:'6000'},{t:'Butine, zadnjica i stomak (5 tret.)',min:'',rsd:'7000'} ] },
+          { name:'Gua sha lica (sa kristalima)', rows:[
+            {t:'1 tretman',min:'',rsd:'1000'},{t:'5 tretmana',min:'',rsd:'3000'} ] },
+          { name:'Vulkansko kamenje', rows:[
+            {t:'Celo telo',min:'60',rsd:'5000'},{t:'Zadnja strana tela',min:'40',rsd:'4000'},{t:'Leđa',min:'30',rsd:'3000'},{t:'Noge',min:'30',rsd:'3000'},{t:'Stomak',min:'20',rsd:'1500'} ] }
+        ] },
+      kristali:{ group:'studio', title:'Kristali i nakit', cat:'Proizvod · Studio Zmaj', badge:'Proizvod', short:'Ručni nakit i prirodni poludragi kristali.',
+        img:'uploads/kristali.jpg',
+        desc:'Ručno izrađen nakit i prirodni poludragi kristali — ametist, ružičasti kvarc, planinski kristal. Svaki komad bira se zbog svoje energije i lepote.',
+        benefits:['Prirodni, pažljivo odabrani minerali','Ručna izrada i jedinstveni komadi','Idealno kao poklon sa značenjem','Savet pri izboru kristala'],
+        infoLabel:'Vrsta', infoVal:'Nakit · minerali', price:'od 700 RSD', cta:'Naruči proizvod',
+        priceTable:[
+          { name:'Kristali', rows:[ {t:'Komad kristala',min:'',rsd:'700–2000'} ] },
+          { name:'Nakit', rows:[ {t:'Narukvice',min:'',rsd:'1000 / 2000'},{t:'Ogrlice (hirurški čelik)',min:'',rsd:'1000'},{t:'Ogrlice',min:'',rsd:'3000 / 5000'} ] }
+        ] },
+      med:{ group:'studio', title:'Tinkture i med od maslačka', cat:'Proizvod · Studio Zmaj', badge:'Proizvod', short:'Domaće tinkture i med po tradicionalnoj recepturi.',
+        img:'uploads/tinkture i med od maslačka.jpg',
+        desc:'Domaće tinkture i med od maslačka pripremljeni po tradicionalnim recepturama, od sastojaka iz prirode i bez aditiva.',
+        benefits:['Prirodni sastojci bez konzervansa','Podrška imunitetu i vitalnosti','Tradicionalna, pažljiva priprema','Ograničene sezonske količine'],
+        infoLabel:'Vrsta', infoVal:'Med · tinkture', price:'od 500 RSD', cta:'Naruči proizvod',
+        priceTable:[
+          { name:'Tinkture', rows:[ {t:'Tinktura ruzmarina',min:'',rsd:'500'},{t:'Tinktura divlje koprive',min:'',rsd:'500'},{t:'Tinktura koprive (pogodna i za decu)',min:'',rsd:'500'},{t:'Tinktura srembuša',min:'',rsd:'500'} ] },
+          { name:'Med', rows:[ {t:'Med od maslačka',min:'',rsd:'800'} ] }
+        ] },
+      ulja:{ group:'studio', title:'Ulja za masažu i negu', cat:'Proizvod · Studio Zmaj', badge:'Proizvod', short:'Aromatična ulja za masažu i negu kože.',
+        img:'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=900&q=80',
+        desc:'Aromatična ulja za masažu i svakodnevnu negu kože, obogaćena biljnim ekstraktima. Hrane, hidriraju i opuštaju.',
+        benefits:['Prirodni biljni ekstrakti i eterična ulja','Nega i hidratacija kože','Pogodna za masažu i aromaterapiju','Pakovanja za kućnu i profesionalnu upotrebu'],
+        infoLabel:'Vrsta', infoVal:'Ulja za masažu', price:'od 500 RSD', cta:'Naruči proizvod',
+        priceTable:[
+          { name:'Proizvodi', rows:[ {t:'Ulja za masažu i negu',min:'',rsd:'500'} ] }
+        ] }
+    };
+
+    const h = React.createElement;
+    const svg = (paths, sz=26) => h('svg', { width:sz, height:sz, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:1.7, strokeLinecap:'round', strokeLinejoin:'round' },
+      paths.map((dPath,i) => h('path', { key:i, d:dPath })));
+    const ICONS = {
+      fitnessmix: svg(['M13 2 3 14h9l-1 8 10-12h-9l1-8z']),
+      borilacke:  svg(['M7 11V7a2 2 0 0 1 4 0v3M11 11V6a2 2 0 0 1 4 0v5M15 11V8a2 2 0 0 1 4 0v6a6 6 0 0 1-6 6h-2.5a4 4 0 0 1-3-1.4L5 15.5a1.8 1.8 0 0 1 2.7-2.3L9 14']),
+      joga:       svg(['M12 22c-4 0-7-2.2-7-6 0 0 3 .5 4.5 2.3M12 22c4 0 7-2.2 7-6 0 0-3 .5-4.5 2.3M12 22c-2 0-3.5-3-3.5-6S10 9 12 7c2 2 3.5 6 3.5 9S14 22 12 22z']),
+      obuke:      svg(['M12 15a4 4 0 1 0 0-8 4 4 0 0 0 0 8z','M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4']),
+      relax:      svg(['M12 22c-4 0-7-2.2-7-6 0 0 3 .5 4.5 2.3M12 22c4 0 7-2.2 7-6 0 0-3 .5-4.5 2.3M12 22c-2 0-3.5-3-3.5-6S10 9 12 7c2 2 3.5 6 3.5 9S14 22 12 22z']),
+      anticelulit:svg(['M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7z','M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z']),
+      kristali:   svg(['M6 3h12l3 6-9 12L3 9l3-6z','M3 9h18M9 3 6 9l6 12 6-12-3-6']),
+      med:        svg(['M8 2h8M9 2v3.5L6 10v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10l-3-4.5V2','M6 14h12']),
+      ulja:       svg(['M9 2h6M10 2v3l-2 2v13a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V7l-2-2V2','M8 12h8','M12 15v3'])
+    };
+    const theme = (k) => DATA[k].group === 'sport' ? sport : studio;
+    const enrich = (k) => { const t = theme(k); return Object.assign({}, DATA[k], t, { key:k, go:mk(k), icon:ICONS[k] }); };
+
+    // ----- nav -----
+    const groupDefs = [
+      { key:'treninzi', label:'Treninzi', items:[['fitnessmix','FitnessMix'],['borilacke','Borilačke veštine'],['joga','Joga'],['obuke','Obuke i individualni treninzi']] },
+      { key:'masaze',   label:'Masaže',   items:[['relax','Relax masaža'],['anticelulit','Anticelulit tretmani']] },
+      { key:'proizvodi',label:'Proizvodi',items:[['kristali','Kristali i nakit'],['med','Tinkture i med od maslačka'],['ulja','Ulja za masažu i negu']] }
+    ];
+    const navGroups = groupDefs.map(g => {
+      const isOpen = self.state.openDropdown === g.key;
+      return {
+        isGroup:true, isLink:false, label:g.label, key:g.key, isOpen, caret: isOpen ? '−' : '+',
+        open:  () => { if (!self.state.isMobile) self.setState({ openDropdown:g.key }); },
+        close: () => { if (!self.state.isMobile) self.setState({ openDropdown:null }); },
+        toggle:() => self.setState({ openDropdown: self.state.openDropdown === g.key ? null : g.key }),
+        items: g.items.map(([k,l]) => ({ label:l, go:mk(k) }))
+      };
+    });
+    const navItems = [
+      { isGroup:false, isLink:true, label:'Početna', go:mk('home') },
+      ...navGroups,
+      { isGroup:false, isLink:true, label:'Kontakt', go:mk('contact') }
+    ];
+
+    // ----- featured -----
+    const featuredKeys = ['fitnessmix','borilacke','joga','relax','anticelulit','kristali','med'];
+    const featured = featuredKeys.map(enrich);
+
+    // ----- current detail -----
+    const key = self.state.key;
+    const d0 = DATA[key] ? enrich(key) : null;
+    const d = d0 ? Object.assign({}, d0, {
+      benefits: d0.benefits.map((t,i) => ({ n:i+1, t })),
+      hasPrices: !!(d0.priceTable && d0.priceTable.length)
+    }) : null;
+
+    // related chips (same group, excluding current)
+    const related = d0 ? Object.keys(DATA)
+      .filter(k => DATA[k].group === DATA[key].group && k !== key)
+      .map(k => ({ title: DATA[k].title, go: mk(k) })) : [];
+
+    const gallery = [
+      { img:'uploads/471428676_122197283360236678_6121220443673279844_n.jpg', label:'Joga u prirodi' },
+      { img:'uploads/471590660_122197283342236678_2619931177820618136_n.jpg', label:'Jutarnja joga' },
+      { img:'uploads/471667725_122197283192236678_1746166672238295071_n.jpg', label:'Samoodbrana' },
+      { img:'uploads/482190941_2194790887590972_4760462431902055998_n.jpg', label:'Obuke i veštine' },
+      { img:'uploads/joga-744345aa.jpg', label:'Joga i opuštanje' },
+      { img:'uploads/819470868_2702957633440959_2672857725330495189_n.jpg', label:'FitnessMix' },
+      { img:'uploads/kristal.jpg', label:'Kristali i nakit' },
+      { img:'uploads/672685730_2557183114685079_8146490965384433188_n.jpg', label:'Med od maslačka' }
+    ];
+
+    const footTreninzi = [['fitnessmix','FitnessMix'],['borilacke','Borilačke veštine'],['joga','Joga'],['obuke','Individualni treninzi']].map(([k,l]) => ({ label:l, go:mk(k) }));
+    const footStudio   = [['relax','Relax masaža'],['anticelulit','Anticelulit tretmani'],['kristali','Kristali i nakit'],['med','Med od maslačka'],['ulja','Ulja za negu']].map(([k,l]) => ({ label:l, go:mk(k) }));
+
+    const contactCards = [
+      { label:'Telefon', value:'+381 63 350 426', sub:'Pozovite nas radnim danima' },
+      { label:'Adresa',  value:'Dobrivoja Radosavljevića Bobija 5, Bor 19210', sub:'Centar i studio na istoj lokaciji' },
+      { label:'Radno vreme', value:'Pon–Pet 15h–21h', sub:'Vikendom zatvoreno' }
+    ];
+
+    return {
+      isMobile: self.state.isMobile,
+      showDesktop: !self.state.isMobile,
+      showMobile: self.state.isMobile,
+      mobileOpen: self.state.mobileOpen,
+      toggleMobile: () => self.setState({ mobileOpen: !self.state.mobileOpen }),
+      isHome: self.state.view === 'home',
+      isDetail: self.state.view === 'detail',
+      isContact: self.state.view === 'contact',
+      navItems, navGroups,
+      homeGo: mk('home'), contactGo: mk('contact'),
+      scrollTop: () => { if (typeof window !== 'undefined') window.scrollTo({ top:0, behavior:'smooth' }); },
+      heroSportGo: mk('fitnessmix'), heroStudioGo: mk('relax'),
+      featured, d, related, footTreninzi, footStudio, contactCards, gallery
+    };
+  }
+}
+</script>
+</body>
+</html>
